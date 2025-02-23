@@ -169,3 +169,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Database data and logs
+postgres_data/
+postgres_air_data/
+minio_data/

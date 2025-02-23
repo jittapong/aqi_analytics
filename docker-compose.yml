@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # ✅ PostgreSQL (Relational Database)
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: analytics
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+  
+  postgres_air_data:
+    image: postgres:latest
+    container_name: postgres_air_data
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: air_data
+    ports:
+      - "54329:5432"
+    volumes:
+      - ./postgres_air_data:/var/lib/postgresql/data
+
+  # ✅ MinIO (S3-Compatible Object Storage)
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: adminpassword
+    ports:
+      - "9000:9000"  # S3 API
+      - "9001:9001"  # Web UI
+    volumes:
+      - ./minio_data:/data
+
+  # # ✅ Apache Iceberg (Lakehouse Table Format)
+  # iceberg-metastore:
+  #   image: apache/hive-metastore:latest
+  #   container_name: iceberg-metastore
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     METASTORE_DB: postgres
+  #     POSTGRES_USER: admin
+  #     POSTGRES_PASSWORD: adminpassword
+  #   ports:
+  #     - "9083:9083"
+
+  # ✅ Redis (In-Memory Key-Value Store)
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  zookeeper:
+    image: zookeeper:latest
+    container_name: zookeeper
+    restart: always
+    ports:
+      - "2181:2181"
+
+  # ✅ Apache Drill (SQL Query Engine for Parquet, Iceberg, MinIO)
+  drill:
+    image: apache/drill:latest
+    container_name: drill
+    platform: linux/amd64
+    depends_on:
+      - zookeeper
+    environment:
+      DRILL_HEAP: "2G"
+      DRILL_ZK_CONNECT: "zookeeper:2181"
+    ports:
+      - "8047:8047"
+    command: ["/bin/bash", "-c", "/opt/drill/bin/drillbit.sh run"]
+
+  # ✅ Apache Spark (Big Data Processing)
+  spark:
+    image: bitnami/spark:latest
+    container_name: spark
+    environment:
+      SPARK_MODE: master
+    ports:
+      - "7077:7077"  # Spark Master
+      - "8080:8080"  # Web UI
+    volumes:
+      - ./spark_data:/opt/spark/work-dir
+
+  # ✅ Apache Airflow (Workflow Orchestration)
+  airflow:
+    image: bitnami/airflow:latest
+    container_name: airflow
+    restart: always
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:adminpassword@postgres:5432/analytics
+      - AIRFLOW_USERNAME=admin
+      - AIRFLOW_PASSWORD=adminpassword
+      - AIRFLOW_EMAIL=admin@example.com
+      - AIRFLOW_FIRSTNAME=Admin
+      - AIRFLOW_LASTNAME=User
+      - AIRFLOW_ROLE=Admin
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+    volumes:
+      - "/Users/jittapongk/Workspace/data_engineer/data_pipeline_with_all_storage_types/airflow_dags:/opt/bitnami/airflow/dags"
+
+volumes:
+  postgres_air_data:
+  postgres_data:
+  minio_data:
+  spark_data:
