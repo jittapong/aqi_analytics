@@ -104,6 +104,8 @@ services:
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:adminpassword@postgres:5432/analytics
+      - AIRFLOW__WEBSERVER__SECRET_KEY=supersecretkey123
+      - AIRFLOW__CORE__FERNET_KEY="xUDsDq1U4Qe_OUEkkEB2xZRG4dm6JkF-tHFyudOHbaw="
       - AIRFLOW_USERNAME=admin
       - AIRFLOW_PASSWORD=adminpassword
       - AIRFLOW_EMAIL=admin@example.com
@@ -115,7 +117,24 @@ services:
     depends_on:
       - postgres
     volumes:
-      - "/Users/jittapongk/Workspace/data_engineer/data_pipeline_with_all_storage_types/airflow_dags:/opt/bitnami/airflow/dags"
+      - "./airflow_dags:/opt/bitnami/airflow/dags"
+      - "./init_airflow_connection.sh:/docker-entrypoint-initdb.d/init_airflow_connection.sh"
+
+  airflow_scheduler:
+    image: bitnami/airflow:latest
+    container_name: airflow_scheduler
+    restart: always
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:adminpassword@postgres:5432/analytics
+      - AIRFLOW__WEBSERVER__SECRET_KEY=supersecretkey123
+      - AIRFLOW__CORE__FERNET_KEY="xUDsDq1U4Qe_OUEkkEB2xZRG4dm6JkF-tHFyudOHbaw="
+    depends_on:
+      - postgres
+      - airflow
+    command: "airflow scheduler"
+    volumes:
+      - "./airflow_dags:/opt/bitnami/airflow/dags"
 
 volumes:
   postgres_air_data:

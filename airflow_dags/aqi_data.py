@@ -10,7 +10,7 @@ from aqi.etl import validate_data, parse_data, clean_data, push_to_db
 default_args = {
     "owner": "bomb",
     "depends_on_past": False,
-    "start_date": datetime(2025, 2, 22, 9, 20),
+    "start_date": datetime(2025, 2, 23, 10, 28),
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 1,
@@ -23,7 +23,7 @@ dag = DAG(
     "aqi_data",
     default_args=default_args,
     description="A simple data pipeline for AQI data",
-    schedule_interval="* * * * *",
+    schedule_interval="*/5 * * * *",
 )
 
 
