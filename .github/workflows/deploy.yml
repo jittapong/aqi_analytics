@@ -21,4 +21,4 @@ jobs:
 
       - name: Deploy to Dev Server
         run: |
-          ssh -p 12122 jitta@codekucm.trueddns.com "cd /Workspace/data_analytics/aqi_analytics && git pull origin main && /bin/bash /Workspace/data_analytics/aqi_analytics/test.sh"
+          ssh -p 12122 jitta@codekucm.trueddns.com "cd Workspace\data_analytics\aqi_analytics && git pull origin main"
