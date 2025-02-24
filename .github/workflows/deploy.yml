@@ -1,0 +1,24 @@
+name: CI/CD Deployment via SSH
+
+on:
+  push:
+    branches:
+      - main  # Change this to your deployment branch
+
+jobs:
+  deploy:
+    runs-on: windows
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+                echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+                chmod 600 ~/.ssh/id_rsa
+                ssh-keyscan -p 12122 -H codekucm.trueddns.com >> ~/.ssh/known_hosts
+
+      - name: Deploy to Dev Server
+        run: |
+          ssh -p 12122 user@codekucm.trueddns.com "cd /Workspace/data_analytics/aqi_analytics && git pull origin main && /bin/bash /Workspace/data_analytics/aqi_analytics/test.sh"
