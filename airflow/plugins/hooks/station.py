@@ -1,15 +1,15 @@
 import json
 import requests
 import logging
+import os
 
 # API Endpoint & Token
 API_URL = "https://api.waqi.info/v2/map/bounds/"
-API_TOKEN = "fe657f17f661e34a738e676c757d7cee1118598f"
+API_TOKEN = os.getenv("AQI_API_TOKEN")
 
 # Bounding box for entire Thailand
 LAT_LNG_BOUNDS = ["5.451446,96.135864,21.053264,105.847778"]
 # LAT_LNG_BOUNDS = ["16.562493,96.811523,20.581367,101.755371"] # Bounding box for North of Thailand
-
 
 # Function to fetch data
 def fetch_data():

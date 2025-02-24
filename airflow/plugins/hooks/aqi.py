@@ -1,11 +1,11 @@
 import json
 import requests
 import logging
+import os
 
 # API Endpoint & Token
 API_URL = "https://api.waqi.info/feed/"
-API_TOKEN = "fe657f17f661e34a738e676c757d7cee1118598f"
-
+API_TOKEN = os.getenv("AQI_API_TOKEN")
 
 # Function to fetch data
 def fetch_data(station_uid):

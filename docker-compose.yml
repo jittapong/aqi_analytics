@@ -113,6 +113,8 @@ services:
       - AIRFLOW_FIRSTNAME=Admin
       - AIRFLOW_LASTNAME=User
       - AIRFLOW_ROLE=Admin
+    env_file:
+      - .env
     ports:
       - "8081:8080"
     depends_on:
@@ -133,6 +135,8 @@ services:
       - AIRFLOW__WEBSERVER__SECRET_KEY=supersecretkey123
       - AIRFLOW__CORE__FERNET_KEY="xUDsDq1U4Qe_OUEkkEB2xZRG4dm6JkF-tHFyudOHbaw="
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    env_file:
+      - .env
     depends_on:
       - postgres
       - airflow

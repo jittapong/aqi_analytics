@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from datetime import datetime, timedelta
-from station.fetch import fetch_data
+from airflow.plugins.hooks.fetch import fetch_data
 from station.etl import validate_data, parse_data, clean_data, push_to_db
 
 # Default arguments for the DAG
