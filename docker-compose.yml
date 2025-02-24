@@ -118,7 +118,9 @@ services:
     depends_on:
       - postgres
     volumes:
-      - "./airflow_dags:/opt/bitnami/airflow/dags"
+      - "./airflow/dags:/opt/bitnami/airflow/dags"
+      - "./airflow/plugins:/opt/bitnami/airflow/plugins"
+      - "./airflow/tests:/opt/bitnami/airflow/tests"
       - "./init_airflow_connection.sh:/docker-entrypoint-initdb.d/init_airflow_connection.sh"
 
   airflow_scheduler:
@@ -136,7 +138,9 @@ services:
       - airflow
     command: "airflow scheduler"
     volumes:
-      - "./airflow_dags:/opt/bitnami/airflow/dags"
+      - "./airflow/dags:/opt/bitnami/airflow/dags"
+      - "./airflow/plugins:/opt/bitnami/airflow/plugins"
+      - "./airflow/tests:/opt/bitnami/airflow/tests"
 
 volumes:
   postgres_air_data:
