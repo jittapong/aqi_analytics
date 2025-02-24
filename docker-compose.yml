@@ -106,6 +106,7 @@ services:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:adminpassword@postgres:5432/analytics
       - AIRFLOW__WEBSERVER__SECRET_KEY=supersecretkey123
       - AIRFLOW__CORE__FERNET_KEY="xUDsDq1U4Qe_OUEkkEB2xZRG4dm6JkF-tHFyudOHbaw="
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW_USERNAME=admin
       - AIRFLOW_PASSWORD=adminpassword
       - AIRFLOW_EMAIL=admin@example.com
@@ -129,6 +130,7 @@ services:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:adminpassword@postgres:5432/analytics
       - AIRFLOW__WEBSERVER__SECRET_KEY=supersecretkey123
       - AIRFLOW__CORE__FERNET_KEY="xUDsDq1U4Qe_OUEkkEB2xZRG4dm6JkF-tHFyudOHbaw="
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
     depends_on:
       - postgres
       - airflow

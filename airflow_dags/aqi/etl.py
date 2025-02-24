@@ -1,4 +1,5 @@
 import logging
+import json
 import pandas as pd
 
 
@@ -16,116 +17,88 @@ def parse_data(data):
         logging.warning("No stations data found!")
         return pd.DataFrame()
 
-    stations = []
-    for station in data["data"]:
-        stations.append(
-            {
-                "uid": station.get("uid"),
-                "aqi": station.get("aqi"),
-                "latitude": station.get("lat"),
-                "longitude": station.get("lon"),
-                "station_name": station["station"].get("name"),
-                "timestamp": station["station"].get("time"),
-            }
-        )
+    aqi = {}
+    aqi["idx"] = data["data"].get("idx")
+    aqi["address"] = data["data"]["city"].get("name")
+    aqi["aqi"] = data["data"]["iaqi"].get("pm25", {}).get("v")
+    aqi["dew"] = data["data"]["iaqi"].get("dew", {}).get("v")
+    aqi["h"] = data["data"]["iaqi"].get("h", {}).get("v")
+    aqi["o3"] = data["data"]["iaqi"].get("o3", {}).get("v")
+    aqi["p"] = data["data"]["iaqi"].get("p", {}).get("v")
+    aqi["pm10"] = data["data"]["iaqi"].get("pm10", {}).get("v")
+    aqi["pm25"] = data["data"]["iaqi"].get("pm25", {}).get("v")
+    aqi["r"] = data["data"]["iaqi"].get("r", {}).get("v")
+    aqi["t"] = data["data"]["iaqi"].get("t", {}).get("v")
+    aqi["w"] = data["data"]["iaqi"].get("w", {}).get("v")
+    aqi["timestamp"] = data["data"]["time"].get("iso")
+    aqi["forecast"] = json.dumps(data["data"]["forecast"].get("daily"))
 
-    logging.info(f"Extracted {len(stations)} stations.")
-    df = pd.DataFrame(stations)
+    df = pd.DataFrame(aqi, index=[0])
     df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+
     return df
 
 
 def clean_data(data):
-    # Drop rows where 'uid' is non-integer
-    data = data[pd.to_numeric(data["uid"], errors="coerce").notnull()]
-    data["uid"] = data["uid"].astype(int)
-
-    # Validate latitude and longitude
-    data = data[
-        (data["latitude"].between(-90, 90)) & (data["longitude"].between(-180, 180))
-    ]
-
-    # If 'aqi' is non-integer, fill with None
-    data["aqi"] = pd.to_numeric(data["aqi"], errors="coerce")
-    data["aqi"] = data["aqi"].apply(
-        lambda x: None if pd.isna(x) else int(x) if x.is_integer() else None
-    )
-
-    # If 'stationname' is invalid string, replace with empty string
-    data["station_name"] = data["station_name"].apply(
-        lambda x: x if isinstance(x, str) else ""
-    )
-
+    # TODO
     return data
 
 
 # Function to insert data into PostgreSQL
-def push_to_db(conn, stations):
+def push_to_db(conn, data):
     cursor = conn.cursor()
-
-    # SQL command to create the station_info table if it does not exist
-    create_station_info_table_query = """
-    CREATE TABLE IF NOT EXISTS station_info (
-        id SERIAL PRIMARY KEY,
-        uid INTEGER UNIQUE,
-        latitude FLOAT,
-        longitude FLOAT,
-        station_name VARCHAR(255)
-    );
-    """
 
     # SQL command to create the aqi_data table if it does not exist
     create_aqi_data_table_query = """
     CREATE TABLE IF NOT EXISTS aqi_data (
         id SERIAL PRIMARY KEY,
-        uid INTEGER,
-        aqi INTEGER,
+        idx INTEGER,
+        address VARCHAR(255),
+        aqi FLOAT,
+        dew FLOAT,
+        h FLOAT,
+        o3 FLOAT,
+        p FLOAT,
+        pm10 FLOAT,
+        pm25 FLOAT,
+        r FLOAT,
+        t FLOAT,
+        w FLOAT,
         timestamp TIMESTAMP,
-        UNIQUE(uid, timestamp),
-        FOREIGN KEY (uid) REFERENCES station_info(uid)
+        forecast JSONB
     );
     """
 
-    # Execute the SQL commands
-    cursor.execute(create_station_info_table_query)
+    # Execute the SQL command
     cursor.execute(create_aqi_data_table_query)
     conn.commit()
 
-    insert_station_info_query = """
-    INSERT INTO station_info (uid, latitude, longitude, station_name)
-    VALUES (%s, %s, %s, %s)
-    ON CONFLICT (uid) DO NOTHING
-    """
-
     insert_aqi_data_query = """
-    INSERT INTO aqi_data (uid, aqi, timestamp)
-    VALUES (%s, %s, %s)
-    ON CONFLICT (uid, timestamp) DO NOTHING
+    INSERT INTO aqi_data (idx, address, aqi, dew, h, o3, p, pm10, pm25, r, t, w, timestamp, forecast)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
 
-    for station in stations.itertuples(index=False):
-        cursor.execute(
-            insert_station_info_query,
-            (
-                station.uid,
-                station.latitude,
-                station.longitude,
-                station.station_name,
-            ),
-        )
+    for row in data.itertuples(index=False):
         cursor.execute(
             insert_aqi_data_query,
             (
-                station.uid,
-                (
-                    station.aqi
-                    if not pd.isna(station.aqi) and station.aqi != "-"
-                    else None
-                ),
-                station.timestamp,
+                row.idx,
+                row.address,
+                row.aqi,
+                row.dew,
+                row.h,
+                row.o3,
+                row.p,
+                row.pm10,
+                row.pm25,
+                row.r,
+                row.t,
+                row.w,
+                row.timestamp,
+                row.forecast,
             ),
         )
 
     conn.commit()
     cursor.close()
-    logging.info(f"Inserted {len(stations)} records into the database.")
+    logging.info(f"Inserted aqi data into the database.")
