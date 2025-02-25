@@ -23,7 +23,7 @@ export default function StationsClientWrapper({ initialStations }: StationsClien
   const totalPages = Math.ceil(initialStations.length / ITEMS_PER_PAGE)
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
   const endIndex = startIndex + ITEMS_PER_PAGE
-  const currentStations = initialStations.slice(startIndex, endIndex)
+  const currentStations = Array.isArray(initialStations) ? initialStations.slice(startIndex, endIndex) : []
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)

@@ -1,7 +1,4 @@
 import { pgTable, unique, serial, integer, doublePrecision, varchar } from "drizzle-orm/pg-core"
-import { sql } from "drizzle-orm"
-
-
 
 export const stationInfo = pgTable("station_info", {
 	id: serial().primaryKey().notNull(),
