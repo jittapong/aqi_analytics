@@ -1,15 +1,14 @@
 import { db } from "@/database";
 import { stationInfo } from "@/database/migrations/schema";
-import { NextResponse } from "next/server";
+import { count } from "drizzle-orm";
 
-export async function getStationData(): Promise<NextResponse> {
-    try {
-      // Fetch all records
-      const stations = await db.select().from(stationInfo);
-  
-      return NextResponse.json(stations);
-    } catch (error) {
-      console.error("Error fetching station data:", error);
-      return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
-    }
-  }
+export async function getStationData(pageIndex: number, pageSize: number = 10) {
+  const start = Math.max(0, pageIndex - 1) * pageSize;
+  // await new Promise((resolve) => setTimeout(resolve, 3000));
+  return await db.select().from(stationInfo).offset(start).limit(pageSize);
+}
+
+export async function getTotalPage(pageSize: number = 10) {
+  const result = await db.select({ count: count() }).from(stationInfo);
+  return Math.floor((result[0]?.count || 0) / pageSize);
+}
