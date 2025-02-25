@@ -12,7 +12,11 @@ const compat = new FlatCompat({
 
 // Extending Next.js core configurations
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...compat.extends(
+    'next/core-web-vitals', 
+    'next/typescript',
+    'plugin:node/recommended'
+  ),
   {
     settings: {
       'boundaries/include': ['src/**/*'],
@@ -79,6 +83,7 @@ const eslintConfig = [
           ],
         },
       ],
+      'node/no-unsupported-features/es-syntax': ['error', { version: '20.18.3' }],
     },
     plugins: {
       boundaries: boundariesPlugin,
