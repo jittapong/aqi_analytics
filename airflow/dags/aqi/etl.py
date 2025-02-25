@@ -9,6 +9,7 @@ def validate_data(data):
         raise ValueError("Invalid API Response: Missing required fields.")
 
     logging.info("Data validation successful!")
+    return True
 
 
 # Function to parse data
@@ -18,7 +19,7 @@ def parse_data(data):
         return pd.DataFrame()
 
     aqi = {}
-    aqi["idx"] = data["data"].get("idx")
+    aqi["uid"] = data["data"].get("idx")
     aqi["address"] = data["data"]["city"].get("name")
     aqi["aqi"] = data["data"]["iaqi"].get("pm25", {}).get("v")
     aqi["dew"] = data["data"]["iaqi"].get("dew", {}).get("v")
@@ -31,7 +32,7 @@ def parse_data(data):
     aqi["t"] = data["data"]["iaqi"].get("t", {}).get("v")
     aqi["w"] = data["data"]["iaqi"].get("w", {}).get("v")
     aqi["timestamp"] = data["data"]["time"].get("iso")
-    aqi["forecast"] = json.dumps(data["data"]["forecast"].get("daily"))
+    aqi["forecast"] = json.dumps(data["data"].get("forecast", {}).get("daily", {}))
 
     df = pd.DataFrame(aqi, index=[0])
     df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
@@ -51,8 +52,7 @@ def push_to_db(conn, data):
     # SQL command to create the aqi_data table if it does not exist
     create_aqi_data_table_query = """
     CREATE TABLE IF NOT EXISTS aqi_data (
-        id SERIAL PRIMARY KEY,
-        idx INTEGER,
+        uid INTEGER PRIMARY KEY,
         address VARCHAR(255),
         aqi FLOAT,
         dew FLOAT,
@@ -74,15 +74,30 @@ def push_to_db(conn, data):
     conn.commit()
 
     insert_aqi_data_query = """
-    INSERT INTO aqi_data (idx, address, aqi, dew, h, o3, p, pm10, pm25, r, t, w, timestamp, forecast)
+    INSERT INTO aqi_data (uid, address, aqi, dew, h, o3, p, pm10, pm25, r, t, w, timestamp, forecast)
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    ON CONFLICT (uid) DO UPDATE
+    SET 
+        address = EXCLUDED.address,
+        aqi = EXCLUDED.aqi,
+        dew = EXCLUDED.dew,
+        h = EXCLUDED.h,
+        o3 = EXCLUDED.o3,
+        p = EXCLUDED.p,
+        pm10 = EXCLUDED.pm10,
+        pm25 = EXCLUDED.pm25,
+        r = EXCLUDED.r,
+        t = EXCLUDED.t,
+        w = EXCLUDED.w,
+        timestamp = EXCLUDED.timestamp,
+        forecast = EXCLUDED.forecast;
     """
 
     for row in data.itertuples(index=False):
         cursor.execute(
             insert_aqi_data_query,
             (
-                row.idx,
+                row.uid,
                 row.address,
                 row.aqi,
                 row.dew,
@@ -101,4 +116,4 @@ def push_to_db(conn, data):
 
     conn.commit()
     cursor.close()
-    logging.info(f"Inserted aqi data into the database.")
+    logging.info(f"Upserted aqi data into the database.")
