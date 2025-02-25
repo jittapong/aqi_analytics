@@ -6,7 +6,6 @@ export async function getStationData(): Promise<NextResponse> {
     try {
       // Fetch all records
       const stations = await db.select().from(stationInfo);
-      console.log("stations >>", stations);
   
       return NextResponse.json(stations);
     } catch (error) {
