@@ -146,6 +146,23 @@ services:
       - "./airflow/plugins:/opt/bitnami/airflow/plugins"
       - "./airflow/tests:/opt/bitnami/airflow/tests"
 
+  # # ✅ Next.js (Frontend)
+  # nextjs:
+  #   build:
+  #     context: ./ui
+  #     dockerfile: Dockerfile
+  #   container_name: nextjs
+  #   restart: always
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NODE_ENV=production
+  #   depends_on:
+  #     - postgres
+  #   volumes:
+  #     - ./ui:/app
+  #     - /app/node_modules
+
 volumes:
   postgres_air_data:
   postgres_data:

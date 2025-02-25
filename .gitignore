@@ -174,5 +174,3 @@ cython_debug/
 postgres_data/
 postgres_air_data/
 minio_data/
-
-.DS_Store
