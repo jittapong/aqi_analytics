@@ -4,15 +4,15 @@ from airflow.decorators import task
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from datetime import datetime, timedelta
-from station.etl import get_all_stations
-from aqi.etl import parse_data, validate_data, clean_data, push_to_db
+from etl.station import get_all_stations
+from etl.aqi import parse_data, validate_data, clean_data, push_to_db
 from hooks.aqi import fetch_data
 
 # ✅ Define default arguments
 default_args = {
     "owner": "bomb",
     "depends_on_past": False,
-    "start_date": datetime(2025, 2, 24, 10, 28),
+    "start_date": datetime(2025, 2, 25, 2, 40),
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 1,
@@ -24,7 +24,7 @@ with DAG(
     "aqi_data",
     default_args=default_args,
     description="Fetch and process AQI data for all stations",
-    schedule_interval="0 * * * *",  # Run hourly
+    schedule_interval="*/5 * * * *",  # Run every 5 minutes
     max_active_tasks=10,  # ✅ Limit number of concurrent tasks globally
     tags=["AQI", "ETL"]
 ) as dag:

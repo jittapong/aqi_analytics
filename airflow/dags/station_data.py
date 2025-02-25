@@ -4,13 +4,13 @@ from airflow.decorators import task
 from airflow.hooks.postgres_hook import PostgresHook
 from datetime import datetime, timedelta
 from hooks.station import fetch_data
-from station.etl import validate_data, parse_data, clean_data, push_to_db
+from etl.station import validate_data, parse_data, clean_data, push_to_db
 
 # ✅ Define default arguments for the DAG
 default_args = {
     "owner": "bomb",
     "depends_on_past": False,
-    "start_date": datetime(2025, 2, 24, 10, 28),
+    "start_date": datetime(2025, 2, 25, 2, 40),
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 1,
