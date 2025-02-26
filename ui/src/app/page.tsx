@@ -5,6 +5,7 @@ import {
   getTotalPage,
 } from "@/features/station/server/db/station";
 import { redirect } from "next/navigation";
+
 interface StationPageProps {
   searchParams?: Promise<{
     page: string;

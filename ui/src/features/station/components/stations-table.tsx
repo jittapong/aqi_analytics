@@ -1,9 +1,9 @@
 type Station = {
   id: number;
-  uid: number;
-  latitude: number;
-  longitude: number;
-  stationName: string;
+  uid: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  stationName: string | null;
 };
 
 type StationsTableProps = {
@@ -33,7 +33,7 @@ export default function StationsTable({ stations }: StationsTableProps) {
               <td className="px-4 py-2 text-black">
                 <div
                   className="max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl truncate"
-                  title={station.stationName}
+                  title={station.stationName ?? ""}
                 >
                   {station.stationName}
                 </div>
