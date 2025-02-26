@@ -28,6 +28,20 @@ services:
     volumes:
       - ./postgres_air_data:/var/lib/postgresql/data
 
+  postgres_keycloak_data:
+    image: postgres:latest
+    container_name: postgres_keycloak_data
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=adminpassword
+      - POSTGRES_DB=keycloak
+    ports:
+      - "54330:5432"
+    volumes:
+      - ./postgres_keycloak_data:/var/lib/postgresql/data
+    networks:
+      - keycloak-net
+
   # ✅ MinIO (S3-Compatible Object Storage)
   minio:
     image: quay.io/minio/minio
@@ -146,8 +160,39 @@ services:
       - "./airflow/plugins:/opt/bitnami/airflow/plugins"
       - "./airflow/tests:/opt/bitnami/airflow/tests"
 
+  # ✅ Keycloak (Auth Service)
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    restart: always
+    command: ["start-dev"]  # Enables development mode
+    environment:
+      - KEYCLOAK_ADMIN=admin  # New format for Keycloak 17+
+      - KEYCLOAK_ADMIN_PASSWORD=adminpassword
+      - KC_DB=postgres
+      - KC_DB_URL_HOST=postgres_keycloak_data
+      - KC_DB_URL_PORT=5432
+      - KC_DB_USERNAME=admin
+      - KC_DB_PASSWORD=adminpassword
+      - KC_DB_DATABASE=keycloak
+      - PROXY_ADDRESS_FORWARDING=true
+    ports:
+      - "8082:8080"  # Access Keycloak UI at http://localhost:8082
+    depends_on:
+      - postgres
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    networks:
+      - keycloak-net
+
 volumes:
   postgres_air_data:
   postgres_data:
+  postgres_keycloak_data:
   minio_data:
   spark_data:
+  keycloak_data:
+
+networks:
+  keycloak-net:
+    driver: bridge

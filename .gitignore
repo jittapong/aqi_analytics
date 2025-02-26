@@ -173,4 +173,5 @@ cython_debug/
 # Database data and logs
 postgres_data/
 postgres_air_data/
+postgres_keycloak_data/
 minio_data/
