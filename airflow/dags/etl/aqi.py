@@ -113,6 +113,55 @@ def push_to_db(conn, data):
                 row.forecast,
             ),
         )
+    
+    # SQL command to create the aqi_data table if it does not exist
+    create_historical_aqi_data_table_query = """
+    CREATE TABLE IF NOT EXISTS historical_aqi_data (
+        id SERIAL PRIMARY KEY,
+        uid INTEGER,
+        aqi FLOAT,
+        dew FLOAT,
+        h FLOAT,
+        o3 FLOAT,
+        p FLOAT,
+        pm10 FLOAT,
+        pm25 FLOAT,
+        r FLOAT,
+        t FLOAT,
+        w FLOAT,
+        timestamp TIMESTAMP,
+        UNIQUE (uid, timestamp)
+    );
+    """
+
+    # Execute the SQL command
+    cursor.execute(create_historical_aqi_data_table_query)
+    conn.commit()
+
+    insert_historical_aqi_data_query = """
+    INSERT INTO historical_aqi_data (uid, aqi, dew, h, o3, p, pm10, pm25, r, t, w, timestamp)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    ON CONFLICT (uid, timestamp) DO NOTHING;
+    """
+
+    for row in data.itertuples(index=False):
+        cursor.execute(
+            insert_historical_aqi_data_query,
+            (
+                row.uid,
+                row.aqi,
+                row.dew,
+                row.h,
+                row.o3,
+                row.p,
+                row.pm10,
+                row.pm25,
+                row.r,
+                row.t,
+                row.w,
+                row.timestamp,
+            ),
+        )
 
     conn.commit()
     cursor.close()
