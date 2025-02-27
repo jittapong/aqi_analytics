@@ -190,31 +190,32 @@ services:
     restart: always
     command: ["start"]  # Use production mode
     environment:
-      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
-      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=adminpassword
       - KC_DB=postgres
       - KC_DB_URL_HOST=postgres_keycloak_data
       - KC_DB_URL_PORT=5432
-      - KC_DB_USERNAME=${KC_DB_USERNAME}
-      - KC_DB_PASSWORD=${KC_DB_PASSWORD}
+      - KC_DB_USERNAME=admin
+      - KC_DB_PASSWORD=adminpassword
       - KC_DB_DATABASE=keycloak
       - PROXY_ADDRESS_FORWARDING=true
-      - KC_PROXY=edge  # Required for reverse proxy setups
-      - KC_HOSTNAME=auth.example.com  # Replace with your domain
-      - KC_HOSTNAME_STRICT=false
-      - KC_HOSTNAME_STRICT_HTTPS=true
-      - KC_HTTP_ENABLED=false  # Disable HTTP in production
-      - KC_HTTPS_CERTIFICATE_FILE=/etc/x509/https/tls.crt
-      - KC_HTTPS_CERTIFICATE_KEY_FILE=/etc/x509/https/tls.key
-      - KC_HEALTH_ENABLED=true  # Enable health checks
-      - KC_METRICS_ENABLED=true  # Enable metrics for monitoring
+      # - KC_PROXY=edge  # Required for reverse proxy setups
+      # - KC_HOSTNAME=auth.example.com  # Replace with your domain
+      # - KC_HOSTNAME_STRICT=false
+      # - KC_HOSTNAME_STRICT_HTTPS=true
+      # - KC_HTTP_ENABLED=false  # Disable HTTP in production
+      # - KC_HTTPS_CERTIFICATE_FILE=/etc/x509/https/tls.crt
+      # - KC_HTTPS_CERTIFICATE_KEY_FILE=/etc/x509/https/tls.key
+      # - KC_HEALTH_ENABLED=true  # Enable health checks
+      # - KC_METRICS_ENABLED=true  # Enable metrics for monitoring
     ports:
-      - "8443:8443"  # Serve Keycloak over HTTPS
+      - "8082:8080"  # Access Keycloak UI at http://localhost:8082
+      # - "8443:8443"  # Serve Keycloak over HTTPS
     depends_on:
       - postgres
     volumes:
       - keycloak_data:/opt/keycloak/data
-      - /path/to/certificates:/etc/x509/https  # Mount TLS certificates
+      # - /path/to/certificates:/etc/x509/https  # Mount TLS certificates
     networks:
       - keycloak-net
 
